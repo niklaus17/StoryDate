@@ -1,0 +1,127 @@
+    * {
+        box-sizing: border-box;
+    }
+
+    body {
+        margin: 0;
+        min-height: 100vh;
+        font-family: Arial, sans-serif;
+        background: linear-gradient(135deg, #ffd6df, #ee9ca7);
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        color: #2b2b2b;
+    }
+
+    .app {
+        width: 100%;
+        max-width: 430px;
+        padding: 20px;
+    }
+
+    .card {
+        background: rgba(255, 255, 255, 0.94);
+        border-radius: 30px;
+        padding: 30px 22px;
+        text-align: center;
+        box-shadow: 0 20px 50px rgba(0, 0, 0, 0.15);
+        animation: fade .25s ease;
+    }
+
+    @keyframes fade {
+        from {
+            opacity: 0;
+            transform: translateY(10px);
+        }
+
+        to {
+            opacity: 1;
+            transform: translateY(0);
+        }
+    }
+
+    h1 {
+        font-size: 30px;
+        margin: 0 0 16px;
+        line-height: 1.15;
+    }
+
+    p {
+        font-size: 17px;
+        line-height: 1.45;
+        margin: 0 0 20px;
+    }
+
+    .btn {
+        width: 100%;
+        border: none;
+        border-radius: 18px;
+        padding: 16px;
+        margin-top: 12px;
+        font-size: 17px;
+        font-weight: 700;
+        cursor: pointer;
+    }
+
+    .primary {
+        background: #ff4388;
+        color: white;
+    }
+
+    .secondary {
+        background: #f2f2f2;
+        color: #333;
+    }
+
+    .grid {
+        display: grid;
+        grid-template-columns: 1fr 1fr;
+        gap: 12px;
+    }
+
+    .option {
+        border: 2px solid #f4c0d2;
+        background: #fff;
+        border-radius: 18px;
+        padding: 16px 10px;
+        font-size: 16px;
+        font-weight: 700;
+        cursor: pointer;
+    }
+
+    .option.active {
+        border-color: #ff4388;
+        background: #ffe7f0;
+    }
+
+    input,
+    select {
+        width: 100%;
+        border: 2px solid #f4c0d2;
+        border-radius: 16px;
+        padding: 15px;
+        font-size: 16px;
+        margin-top: 10px;
+        outline: none;
+        background: white;
+    }
+
+    .summary {
+        text-align: left;
+        background: #fff3f7;
+        padding: 18px;
+        border-radius: 18px;
+        margin: 18px 0;
+        font-size: 16px;
+        line-height: 1.7;
+    }
+
+    .hidden {
+        display: none;
+    }
+
+    .small {
+        font-size: 14px;
+        opacity: .7;
+        margin-top: 14px;
+    }
