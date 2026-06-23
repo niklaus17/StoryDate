@@ -1,0 +1,158 @@
+<!DOCTYPE html>
+<html lang="ro">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>StoryDate</title>
+
+  <script src="https://telegram.org/js/telegram-web-app.js"></script>
+
+  <style>
+    * { box-sizing: border-box; }
+
+    body {
+      margin: 0;
+      min-height: 100vh;
+      font-family: Arial, sans-serif;
+      background: linear-gradient(135deg, #ffdde1, #ee9ca7);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      color: #2b2b2b;
+    }
+
+    .app {
+      width: 100%;
+      max-width: 420px;
+      padding: 24px;
+      text-align: center;
+    }
+
+    .card {
+      background: rgba(255,255,255,0.9);
+      border-radius: 28px;
+      padding: 32px 24px;
+      box-shadow: 0 20px 50px rgba(0,0,0,0.15);
+    }
+
+    h1 {
+      font-size: 28px;
+      margin-bottom: 16px;
+    }
+
+    p {
+      font-size: 17px;
+      line-height: 1.5;
+    }
+
+    .btn {
+      width: 100%;
+      border: none;
+      border-radius: 18px;
+      padding: 16px;
+      margin-top: 12px;
+      font-size: 17px;
+      font-weight: 700;
+      cursor: pointer;
+    }
+
+    .primary {
+      background: #ff4f8b;
+      color: white;
+    }
+
+    .secondary {
+      background: #f3f3f3;
+      color: #333;
+    }
+
+    .hidden {
+      display: none;
+    }
+  </style>
+</head>
+
+<body>
+  <div class="app">
+    <div class="card" id="screen-start">
+      <h1 id="title">Hei ❤️</h1>
+      <p>Ieși cu mine la o întâlnire?</p>
+
+      <button class="btn primary" onclick="acceptInvite()">Da 💕</button>
+      <button class="btn secondary" onclick="maybeInvite()">Încă nu știu 🙈</button>
+    </div>
+
+    <div class="card hidden" id="screen-maybe">
+      <h1>E ok 😊</h1>
+      <p>Nu trebuie să răspunzi acum. Poți reveni la invitație când dorești.</p>
+      <button class="btn primary" onclick="backToStart()">Totuși vreau să continui ❤️</button>
+    </div>
+
+    <div class="card hidden" id="screen-success">
+      <h1>Super ❤️</h1>
+      <p>Ai acceptat invitația. Următorul pas va fi alegerea datei și orei.</p>
+    </div>
+  </div>
+
+  <script>
+    const API_URL = "https://script.google.com/macros/s/AKfycbyUNUcJhnrFblgU73P31zD4kxn9iLDLNesltO1TSs20PAx8f_BRznSZDe9RggfZ9Yeu-g/exec";
+
+    const tg = window.Telegram.WebApp;
+    tg.expand();
+
+    const user = tg.initDataUnsafe?.user || {};
+
+    const telegramId = user.id || "";
+    const username = user.username || "";
+    const firstName = user.first_name || "Hei";
+
+    document.getElementById("title").innerText =
+      firstName + ", ieși cu mine la o întâlnire? ❤️";
+
+    function showScreen(id) {
+      document.querySelectorAll(".card").forEach(card => {
+        card.classList.add("hidden");
+      });
+      document.getElementById(id).classList.remove("hidden");
+    }
+
+    function saveData(status) {
+      const payload = {
+        telegram_id: telegramId,
+        username: username,
+        first_name: firstName,
+        status: status,
+        date: "",
+        time: "",
+        activity: "",
+        meeting_type: "",
+        location: "",
+        completed: status === "maybe" ? "No" : "No"
+      };
+
+      fetch(API_URL, {
+        method: "POST",
+        mode: "no-cors",
+        headers: {
+          "Content-Type": "application/json"
+        },
+        body: JSON.stringify(payload)
+      });
+    }
+
+    function acceptInvite() {
+      saveData("accepted");
+      showScreen("screen-success");
+    }
+
+    function maybeInvite() {
+      saveData("maybe");
+      showScreen("screen-maybe");
+    }
+
+    function backToStart() {
+      showScreen("screen-start");
+    }
+  </script>
+</body>
+</html>
