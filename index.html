@@ -4,7 +4,6 @@
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
   <title>StoryDate</title>
-
   <script src="https://telegram.org/js/telegram-web-app.js"></script>
 
   <style>
@@ -14,7 +13,7 @@
       margin: 0;
       min-height: 100vh;
       font-family: Arial, sans-serif;
-      background: linear-gradient(135deg, #ffdde1, #ee9ca7);
+      background: linear-gradient(135deg, #ffd6df, #ee9ca7);
       display: flex;
       align-items: center;
       justify-content: center;
@@ -23,26 +22,34 @@
 
     .app {
       width: 100%;
-      max-width: 420px;
-      padding: 24px;
-      text-align: center;
+      max-width: 430px;
+      padding: 20px;
     }
 
     .card {
-      background: rgba(255,255,255,0.9);
-      border-radius: 28px;
-      padding: 32px 24px;
+      background: rgba(255,255,255,0.94);
+      border-radius: 30px;
+      padding: 30px 22px;
+      text-align: center;
       box-shadow: 0 20px 50px rgba(0,0,0,0.15);
+      animation: fade .25s ease;
+    }
+
+    @keyframes fade {
+      from { opacity: 0; transform: translateY(10px); }
+      to { opacity: 1; transform: translateY(0); }
     }
 
     h1 {
-      font-size: 28px;
-      margin-bottom: 16px;
+      font-size: 30px;
+      margin: 0 0 16px;
+      line-height: 1.15;
     }
 
     p {
       font-size: 17px;
-      line-height: 1.5;
+      line-height: 1.45;
+      margin: 0 0 20px;
     }
 
     .btn {
@@ -57,41 +64,136 @@
     }
 
     .primary {
-      background: #ff4f8b;
+      background: #ff4388;
       color: white;
     }
 
     .secondary {
-      background: #f3f3f3;
+      background: #f2f2f2;
       color: #333;
     }
 
-    .hidden {
-      display: none;
+    .grid {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 12px;
+    }
+
+    .option {
+      border: 2px solid #f4c0d2;
+      background: #fff;
+      border-radius: 18px;
+      padding: 16px 10px;
+      font-size: 16px;
+      font-weight: 700;
+      cursor: pointer;
+    }
+
+    .option.active {
+      border-color: #ff4388;
+      background: #ffe7f0;
+    }
+
+    input, select {
+      width: 100%;
+      border: 2px solid #f4c0d2;
+      border-radius: 16px;
+      padding: 15px;
+      font-size: 16px;
+      margin-top: 10px;
+      outline: none;
+      background: white;
+    }
+
+    .summary {
+      text-align: left;
+      background: #fff3f7;
+      padding: 18px;
+      border-radius: 18px;
+      margin: 18px 0;
+      font-size: 16px;
+      line-height: 1.7;
+    }
+
+    .hidden { display: none; }
+
+    .small {
+      font-size: 14px;
+      opacity: .7;
+      margin-top: 14px;
     }
   </style>
 </head>
 
 <body>
   <div class="app">
+
     <div class="card" id="screen-start">
       <h1 id="title">Hei ❤️</h1>
-      <p>Ieși cu mine la o întâlnire?</p>
-
+      <p>Am pregătit ceva special pentru tine.</p>
       <button class="btn primary" onclick="acceptInvite()">Da 💕</button>
       <button class="btn secondary" onclick="maybeInvite()">Încă nu știu 🙈</button>
     </div>
 
     <div class="card hidden" id="screen-maybe">
       <h1>E ok 😊</h1>
-      <p>Nu trebuie să răspunzi acum. Poți reveni la invitație când dorești.</p>
-      <button class="btn primary" onclick="backToStart()">Totuși vreau să continui ❤️</button>
+      <p>Nu e grabă. Poți reveni la invitație când vrei.</p>
+      <button class="btn primary" onclick="showScreen('screen-start')">Totuși vreau să continui ❤️</button>
+    </div>
+
+    <div class="card hidden" id="screen-date">
+      <h1>Când îți este comod? 📅</h1>
+      <input type="date" id="dateInput">
+      <select id="timeInput">
+        <option value="">Alege ora</option>
+        <option>17:00</option>
+        <option>18:00</option>
+        <option>19:00</option>
+        <option>20:00</option>
+        <option>21:00</option>
+      </select>
+      <button class="btn primary" onclick="saveDateTime()">Mai departe →</button>
+    </div>
+
+    <div class="card hidden" id="screen-activity">
+      <h1>Ce ai vrea să facem? ✨</h1>
+      <div class="grid">
+        <button class="option" onclick="selectActivity(this, 'Film 🎬')">Film 🎬</button>
+        <button class="option" onclick="selectActivity(this, 'Restaurant 🍝')">Restaurant 🍝</button>
+        <button class="option" onclick="selectActivity(this, 'Cafea ☕')">Cafea ☕</button>
+        <button class="option" onclick="selectActivity(this, 'Plimbare 🌅')">Plimbare 🌅</button>
+        <button class="option" onclick="selectActivity(this, 'Surpriză 🎁')">Surpriză 🎁</button>
+        <button class="option" onclick="selectActivity(this, 'Altceva 💫')">Altceva 💫</button>
+      </div>
+      <button class="btn primary" onclick="goMeeting()">Mai departe →</button>
+    </div>
+
+    <div class="card hidden" id="screen-meeting">
+      <h1>Cum procedăm? 🚗</h1>
+      <button class="btn primary" onclick="selectMeeting('Vin să te iau 🚗')">Vin să te iau 🚗</button>
+      <button class="btn secondary" onclick="selectMeeting('Ne întâlnim la locație 📍')">Ne întâlnim la locație 📍</button>
+    </div>
+
+    <div class="card hidden" id="screen-location">
+      <h1>Trimite locația 📍</h1>
+      <p>Pentru prima versiune, scrie localitatea sau zona. Mai târziu conectăm trimiterea locației direct prin bot.</p>
+      <input type="text" id="locationInput" placeholder="Ex: Chișinău, Botanica">
+      <button class="btn primary" onclick="saveLocation()">Mai departe →</button>
+    </div>
+
+    <div class="card hidden" id="screen-confirm">
+      <h1>Confirmăm? 💌</h1>
+      <div class="summary" id="summaryBox"></div>
+      <button class="btn primary" onclick="confirmInvite()">Confirm ❤️</button>
+      <button class="btn secondary" onclick="showScreen('screen-date')">Modifică</button>
     </div>
 
     <div class="card hidden" id="screen-success">
-      <h1>Super ❤️</h1>
-      <p>Ai acceptat invitația. Următorul pas va fi alegerea datei și orei.</p>
+      <h1>Perfect ❤️</h1>
+      <p>Invitația a fost confirmată. Abia aștept să ne vedem ✨</p>
+      <p class="small">Poți închide aplicația.</p>
     </div>
+
   </div>
 
   <script>
@@ -102,56 +204,120 @@
 
     const user = tg.initDataUnsafe?.user || {};
 
-    const telegramId = user.id || "";
-    const username = user.username || "";
-    const firstName = user.first_name || "Hei";
+    const state = {
+      telegram_id: user.id || "",
+      username: user.username || "",
+      first_name: user.first_name || "Hei",
+      status: "",
+      date: "",
+      time: "",
+      activity: "",
+      meeting_type: "",
+      location: "",
+      completed: "No"
+    };
 
     document.getElementById("title").innerText =
-      firstName + ", ieși cu mine la o întâlnire? ❤️";
+      state.first_name + ", ieși cu mine la o întâlnire? ❤️";
 
     function showScreen(id) {
-      document.querySelectorAll(".card").forEach(card => {
-        card.classList.add("hidden");
-      });
+      document.querySelectorAll(".card").forEach(card => card.classList.add("hidden"));
       document.getElementById(id).classList.remove("hidden");
     }
 
-    function saveData(status) {
-      const payload = {
-        telegram_id: telegramId,
-        username: username,
-        first_name: firstName,
-        status: status,
-        date: "",
-        time: "",
-        activity: "",
-        meeting_type: "",
-        location: "",
-        completed: status === "maybe" ? "No" : "No"
-      };
-
+    function sendData() {
       fetch(API_URL, {
         method: "POST",
         mode: "no-cors",
-        headers: {
-          "Content-Type": "application/json"
-        },
-        body: JSON.stringify(payload)
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify(state)
       });
     }
 
     function acceptInvite() {
-      saveData("accepted");
-      showScreen("screen-success");
+      state.status = "accepted";
+      sendData();
+      showScreen("screen-date");
     }
 
     function maybeInvite() {
-      saveData("maybe");
+      state.status = "maybe";
+      state.completed = "No";
+      sendData();
       showScreen("screen-maybe");
     }
 
-    function backToStart() {
-      showScreen("screen-start");
+    function saveDateTime() {
+      const date = document.getElementById("dateInput").value;
+      const time = document.getElementById("timeInput").value;
+
+      if (!date || !time) {
+        alert("Alege data și ora 😊");
+        return;
+      }
+
+      state.date = date;
+      state.time = time;
+      showScreen("screen-activity");
+    }
+
+    function selectActivity(btn, value) {
+      document.querySelectorAll("#screen-activity .option")
+        .forEach(el => el.classList.remove("active"));
+
+      btn.classList.add("active");
+      state.activity = value;
+    }
+
+    function goMeeting() {
+      if (!state.activity) {
+        alert("Alege o activitate 😊");
+        return;
+      }
+
+      showScreen("screen-meeting");
+    }
+
+    function selectMeeting(value) {
+      state.meeting_type = value;
+
+      if (value.includes("Vin")) {
+        showScreen("screen-location");
+      } else {
+        state.location = "Ne întâlnim la locație";
+        buildSummary();
+        showScreen("screen-confirm");
+      }
+    }
+
+    function saveLocation() {
+      const location = document.getElementById("locationInput").value.trim();
+
+      if (!location) {
+        alert("Scrie localitatea sau zona 😊");
+        return;
+      }
+
+      state.location = location;
+      buildSummary();
+      showScreen("screen-confirm");
+    }
+
+    function buildSummary() {
+      document.getElementById("summaryBox").innerHTML = `
+        👤 Nume: ${state.first_name}<br>
+        📅 Data: ${state.date}<br>
+        🕒 Ora: ${state.time}<br>
+        🎯 Activitate: ${state.activity}<br>
+        🚗 Format: ${state.meeting_type}<br>
+        📍 Locație: ${state.location}
+      `;
+    }
+
+    function confirmInvite() {
+      state.completed = "Yes";
+      sendData();
+      showScreen("screen-success");
     }
   </script>
 </body>
