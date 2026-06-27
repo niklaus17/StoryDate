@@ -1,5 +1,5 @@
 const API_URL =
-  "https://script.google.com/macros/s/AKfycby9_tZRs9Q6gS8Z7RfFfVPSxRzSd6Ddbfmx0rXvjf-e6fkc_g-tMf42GTpg9UBuAQB5hg/exec";
+  "https://script.google.com/macros/s/AKfycbx6lk2qB4C8ONqVW7muB5AXYp41U0-aQjcxtLeHuc6vNJUbe_0FvvANMsTuDJEY7ziAEg/exec";
 
 const tg = window.Telegram.WebApp;
 tg.expand();
