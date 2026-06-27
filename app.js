@@ -37,17 +37,42 @@ function addDays(date, days) {
   return result;
 }
 
-const today = new Date();
-const minDate = formatDate(today);
-const maxDate = formatDate(addDays(today, 14));
+let minDate = "";
+let maxDate = "";
 
-dateInput.min = minDate;
-dateInput.max = maxDate;
+function updateDateLimits() {
+  const today = new Date();
+
+  minDate = formatDate(today);
+  maxDate = formatDate(addDays(today, 14));
+  dateInput.min = minDate;
+  dateInput.max = maxDate;
+}
+
+function isAllowedDate(date) {
+  return date >= minDate && date <= maxDate;
+}
+
+function validateSelectedDate() {
+  updateDateLimits();
+
+  if (!dateInput.value || isAllowedDate(dateInput.value)) {
+    return true;
+  }
+
+  dateInput.value = "";
+  alert("Alege o dată de azi până în următoarele 14 zile 😊");
+  return false;
+}
+
+updateDateLimits();
 dateInput.addEventListener("click", () => {
   if (typeof dateInput.showPicker === "function") {
     dateInput.showPicker();
   }
 });
+dateInput.addEventListener("change", validateSelectedDate);
+dateInput.addEventListener("input", validateSelectedDate);
 
 document.getElementById("title").innerText =
   state.first_name + ", ieși cu mine la o întâlnire? ❤️";
@@ -82,6 +107,8 @@ function maybeInvite() {
 }
 
 function saveDateTime() {
+  updateDateLimits();
+
   const date = document.getElementById("dateInput").value;
   const time = document.getElementById("timeInput").value;
 
@@ -90,13 +117,9 @@ function saveDateTime() {
     return;
   }
 
-  if (date < minDate) {
-    alert("Alege o dată de azi înainte 😊");
-    return;
-  }
-
-  if (date > maxDate) {
-    alert("Alege o dată în următoarele 14 zile 😊");
+  if (!isAllowedDate(date)) {
+    document.getElementById("dateInput").value = "";
+    alert("Alege o dată de azi până în următoarele 14 zile 😊");
     return;
   }
 
