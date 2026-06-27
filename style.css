@@ -106,6 +106,10 @@
         background: white;
     }
 
+    input[type="date"] {
+        cursor: pointer;
+    }
+
     .summary {
         text-align: left;
         background: #fff3f7;

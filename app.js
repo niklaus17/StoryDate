@@ -43,6 +43,11 @@ const maxDate = formatDate(addDays(today, 14));
 
 dateInput.min = minDate;
 dateInput.max = maxDate;
+dateInput.addEventListener("click", () => {
+  if (typeof dateInput.showPicker === "function") {
+    dateInput.showPicker();
+  }
+});
 
 document.getElementById("title").innerText =
   state.first_name + ", ieși cu mine la o întâlnire? ❤️";
