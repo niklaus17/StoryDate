@@ -19,6 +19,31 @@ const state = {
   completed: "No",
 };
 
+const allowedTimes = ["19:00", "20:00", "21:00", "22:00"];
+const dateInput = document.getElementById("dateInput");
+
+function formatDate(date) {
+  const year = date.getFullYear();
+  const month = String(date.getMonth() + 1).padStart(2, "0");
+  const day = String(date.getDate()).padStart(2, "0");
+
+  return `${year}-${month}-${day}`;
+}
+
+function addDays(date, days) {
+  const result = new Date(date);
+  result.setDate(result.getDate() + days);
+
+  return result;
+}
+
+const today = new Date();
+const minDate = formatDate(today);
+const maxDate = formatDate(addDays(today, 14));
+
+dateInput.min = minDate;
+dateInput.max = maxDate;
+
 document.getElementById("title").innerText =
   state.first_name + ", ieși cu mine la o întâlnire? ❤️";
 
@@ -57,6 +82,21 @@ function saveDateTime() {
 
   if (!date || !time) {
     alert("Alege data și ora 😊");
+    return;
+  }
+
+  if (date < minDate) {
+    alert("Alege o dată de azi înainte 😊");
+    return;
+  }
+
+  if (date > maxDate) {
+    alert("Alege o dată în următoarele 14 zile 😊");
+    return;
+  }
+
+  if (!allowedTimes.includes(time)) {
+    alert("Alege o oră între 19:00 și 22:00 😊");
     return;
   }
 
