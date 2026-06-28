@@ -25,18 +25,21 @@
         padding: 30px 22px;
         text-align: center;
         box-shadow: 0 20px 50px rgba(0, 0, 0, 0.15);
-        animation: fade .25s ease;
     }
 
-    @keyframes fade {
+    .card.is-entering {
+        animation: screenIn .32s ease both;
+    }
+
+    @keyframes screenIn {
         from {
             opacity: 0;
-            transform: translateY(10px);
+            transform: translateY(14px) scale(.98);
         }
 
         to {
             opacity: 1;
-            transform: translateY(0);
+            transform: translateY(0) scale(1);
         }
     }
 
@@ -73,6 +76,13 @@
         color: #333;
     }
 
+    .ghost {
+        background: transparent;
+        color: #777;
+        padding: 10px;
+        margin-top: 8px;
+    }
+
     .grid {
         display: grid;
         grid-template-columns: 1fr 1fr;
@@ -104,6 +114,36 @@
         margin-top: 10px;
         outline: none;
         background: white;
+    }
+
+    .form-message {
+        display: none;
+        margin-top: 10px;
+        color: #d72869;
+        font-size: 14px;
+        font-weight: 700;
+        line-height: 1.35;
+    }
+
+    .form-message.visible {
+        display: block;
+        animation: messageIn .2s ease both;
+    }
+
+    .form-message.success {
+        color: #27885f;
+    }
+
+    @keyframes messageIn {
+        from {
+            opacity: 0;
+            transform: translateY(-4px);
+        }
+
+        to {
+            opacity: 1;
+            transform: translateY(0);
+        }
     }
 
     #dateInput {
@@ -190,14 +230,81 @@
         aspect-ratio: 1;
     }
 
+    .time-options {
+        display: grid;
+        grid-template-columns: repeat(4, 1fr);
+        gap: 8px;
+        margin-top: 10px;
+    }
+
+    .time-option {
+        min-height: 48px;
+        border: 2px solid #f4c0d2;
+        border-radius: 16px;
+        background: #fff;
+        color: #333;
+        font-size: 15px;
+        font-weight: 800;
+        cursor: pointer;
+    }
+
+    .time-option.active {
+        border-color: #ff4388;
+        background: #ff4388;
+        color: #fff;
+    }
+
+    .time-option:disabled {
+        color: #bdbdbd;
+        background: #f7f7f7;
+        border-color: #e8e8e8;
+        cursor: default;
+    }
+
     .summary {
         text-align: left;
+        display: grid;
+        gap: 10px;
+        margin: 18px 0 6px;
+    }
+
+    .summary-row {
+        display: grid;
+        grid-template-columns: 42px 1fr;
+        gap: 12px;
+        align-items: center;
         background: #fff3f7;
-        padding: 18px;
+        border: 1px solid #f8c8d8;
         border-radius: 18px;
-        margin: 18px 0;
-        font-size: 16px;
-        line-height: 1.7;
+        padding: 12px;
+    }
+
+    .summary-row > span {
+        display: grid;
+        place-items: center;
+        width: 42px;
+        height: 42px;
+        border-radius: 14px;
+        background: #fff;
+        font-size: 22px;
+    }
+
+    .summary-row strong,
+    .summary-row small {
+        display: block;
+    }
+
+    .summary-row strong {
+        color: #333;
+        font-size: 14px;
+        margin-bottom: 2px;
+    }
+
+    .summary-row small {
+        color: #666;
+        font-size: 15px;
+        line-height: 1.35;
+        overflow-wrap: anywhere;
     }
 
     .hidden {

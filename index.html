@@ -30,14 +30,11 @@
       <h1>Când îți este comod? 📅</h1>
       <input type="text" id="dateInput" placeholder="Alege data" readonly>
       <div class="custom-calendar hidden" id="calendarGrid"></div>
-      <select id="timeInput">
-        <option value="">Alege ora</option>
-        <option>19:00</option>
-        <option>20:00</option>
-        <option>21:00</option>
-        <option>22:00</option>
-      </select>
+      <input type="hidden" id="timeInput">
+      <div class="time-options" id="timeOptions"></div>
+      <div class="form-message" id="dateTimeError"></div>
       <button class="btn primary" onclick="saveDateTime()">Mai departe →</button>
+      <button class="btn ghost" onclick="showScreen('screen-start')">Înapoi</button>
     </div>
 
     <div class="card hidden" id="screen-activity">
@@ -50,27 +47,34 @@
         <button class="option" onclick="selectActivity(this, 'Surpriză 🎁')">Surpriză 🎁</button>
         <button class="option" onclick="selectActivity(this, 'Altceva 💫')">Altceva 💫</button>
       </div>
+      <div class="form-message" id="activityError"></div>
       <button class="btn primary" onclick="goMeeting()">Mai departe →</button>
+      <button class="btn ghost" onclick="showScreen('screen-date')">Înapoi</button>
     </div>
 
     <div class="card hidden" id="screen-meeting">
       <h1>Cum procedăm?</h1>
       <button class="btn primary" onclick="selectMeeting('Vin să te iau 🚶')">Vin să te iau 🚶</button>
       <button class="btn secondary" onclick="selectMeeting('Ne întâlnim la locație 📍')">Ne întâlnim la locație 📍</button>
+      <button class="btn ghost" onclick="showScreen('screen-activity')">Înapoi</button>
     </div>
 
     <div class="card hidden" id="screen-location">
       <h1>Trimite locația 📍</h1>
-      <p>Pentru prima versiune, scrie localitatea sau zona. Mai târziu conectăm trimiterea locației direct prin bot.</p>
+      <p>Trimite locația din Telegram sau scrie localitatea/zona manual.</p>
+      <button class="btn secondary" onclick="requestTelegramLocation()">Trimite locația din Telegram</button>
       <input type="text" id="locationInput" placeholder="Ex: Chișinău, Botanica">
+      <div class="form-message" id="locationError"></div>
       <button class="btn primary" onclick="saveLocation()">Mai departe →</button>
+      <button class="btn ghost" onclick="showScreen('screen-meeting')">Înapoi</button>
     </div>
 
     <div class="card hidden" id="screen-confirm">
       <h1>Confirmăm? 💌</h1>
       <div class="summary" id="summaryBox"></div>
       <button class="btn primary" onclick="confirmInvite()">Confirm ❤️</button>
-      <button class="btn secondary" onclick="showScreen('screen-date')">Modifică</button>
+      <button class="btn ghost" onclick="showScreen('screen-meeting')">Înapoi</button>
+      <button class="btn secondary" onclick="showScreen('screen-date')">Modifică data</button>
     </div>
 
     <div class="card hidden" id="screen-success">

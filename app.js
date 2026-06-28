@@ -23,6 +23,7 @@ const allowedTimes = ["19:00", "20:00", "21:00", "22:00"];
 const dateInput = document.getElementById("dateInput");
 const calendarGrid = document.getElementById("calendarGrid");
 const timeInput = document.getElementById("timeInput");
+const timeOptions = document.getElementById("timeOptions");
 let visibleMonth = new Date();
 
 function formatDate(date) {
@@ -84,6 +85,15 @@ function getDisplayDate(date) {
   });
 }
 
+function escapeHtml(value) {
+  return String(value)
+    .replace(/&/g, "&amp;")
+    .replace(/</g, "&lt;")
+    .replace(/>/g, "&gt;")
+    .replace(/"/g, "&quot;")
+    .replace(/'/g, "&#039;");
+}
+
 function getTimeMinutes(time) {
   const [hours, minutes] = time.split(":").map(Number);
 
@@ -106,22 +116,64 @@ function isAllowedTime(time, date) {
   return getTimeMinutes(time) >= currentMinutes;
 }
 
+function showMessage(id, message, type = "error") {
+  const element = document.getElementById(id);
+
+  if (!element) {
+    return;
+  }
+
+  element.innerText = message;
+  element.classList.toggle("visible", Boolean(message));
+  element.classList.toggle("success", Boolean(message) && type === "success");
+}
+
+function showError(id, message) {
+  showMessage(id, message);
+}
+
 function updateTimeOptions() {
   const selectedDate = getSelectedDate();
+  timeOptions.innerHTML = "";
 
-  Array.from(timeInput.options).forEach((option) => {
-    if (!option.value) {
-      return;
+  allowedTimes.forEach((time) => {
+    const button = document.createElement("button");
+    const isAvailable = selectedDate
+      ? isAllowedTime(time, selectedDate)
+      : false;
+
+    button.type = "button";
+    button.className = "time-option";
+    button.innerText = time;
+    button.disabled = !isAvailable;
+
+    if (timeInput.value === time) {
+      button.classList.add("active");
     }
 
-    option.disabled = selectedDate
-      ? !isAllowedTime(option.value, selectedDate)
-      : false;
+    button.addEventListener("click", () => selectTime(time));
+    timeOptions.appendChild(button);
   });
 
   if (timeInput.value && !isAllowedTime(timeInput.value, selectedDate)) {
     timeInput.value = "";
   }
+}
+
+function selectTime(time) {
+  if (!getSelectedDate()) {
+    showError("dateTimeError", "Alege întâi data.");
+    return;
+  }
+
+  if (!isAllowedTime(time, getSelectedDate())) {
+    showError("dateTimeError", "Alege o oră disponibilă pentru data selectată.");
+    return;
+  }
+
+  timeInput.value = time;
+  showError("dateTimeError", "");
+  updateTimeOptions();
 }
 
 function validateSelectedDate() {
@@ -133,7 +185,7 @@ function validateSelectedDate() {
 
   dateInput.value = "";
   dateInput.dataset.date = "";
-  alert("Alege o dată de azi până în următoarele 14 zile 😊");
+  showError("dateTimeError", "Alege o dată de azi până în următoarele 14 zile.");
   return false;
 }
 
@@ -238,6 +290,7 @@ function renderCalendar() {
     button.addEventListener("click", () => {
       dateInput.value = getDisplayDate(date);
       dateInput.dataset.date = value;
+      showError("dateTimeError", "");
       updateTimeOptions();
       calendarGrid.classList.add("hidden");
       renderCalendar();
@@ -251,14 +304,13 @@ function renderCalendar() {
 
 updateDateLimits();
 renderCalendar();
+updateTimeOptions();
 dateInput.addEventListener("click", () => {
   renderCalendar();
   calendarGrid.classList.remove("hidden");
 });
 dateInput.addEventListener("change", validateSelectedDate);
 dateInput.addEventListener("input", validateSelectedDate);
-timeInput.addEventListener("click", updateTimeOptions);
-timeInput.addEventListener("change", updateTimeOptions);
 
 document.getElementById("title").innerText =
   state.first_name + ", ieși cu mine la o întâlnire? ❤️";
@@ -266,8 +318,14 @@ document.getElementById("title").innerText =
 function showScreen(id) {
   document
     .querySelectorAll(".card")
-    .forEach((card) => card.classList.add("hidden"));
-  document.getElementById(id).classList.remove("hidden");
+    .forEach((card) => {
+      card.classList.add("hidden");
+      card.classList.remove("is-entering");
+    });
+
+  const screen = document.getElementById(id);
+  screen.classList.remove("hidden");
+  screen.classList.add("is-entering");
 
   if (id === "screen-date") {
     validateSelectedDate();
@@ -302,31 +360,33 @@ function saveDateTime() {
   updateDateLimits();
 
   const date = getSelectedDate();
-  const time = document.getElementById("timeInput").value;
+  const time = timeInput.value;
 
   if (!date || !time) {
-    alert("Alege data și ora 😊");
+    showError("dateTimeError", "Alege data și ora.");
     return;
   }
 
   if (!isAllowedDate(date)) {
     document.getElementById("dateInput").value = "";
     document.getElementById("dateInput").dataset.date = "";
-    alert("Alege o dată de azi până în următoarele 14 zile 😊");
+    showError("dateTimeError", "Alege o dată de azi până în următoarele 14 zile.");
     return;
   }
 
   if (!allowedTimes.includes(time)) {
-    alert("Alege o oră între 19:00 și 22:00 😊");
+    showError("dateTimeError", "Alege o oră între 19:00 și 22:00.");
     return;
   }
 
   if (!isAllowedTime(time, date)) {
     timeInput.value = "";
-    alert("Alege o oră disponibilă 😊");
+    updateTimeOptions();
+    showError("dateTimeError", "Alege o oră disponibilă.");
     return;
   }
 
+  showError("dateTimeError", "");
   state.date = date;
   state.time = time;
   showScreen("screen-activity");
@@ -339,11 +399,12 @@ function selectActivity(btn, value) {
 
   btn.classList.add("active");
   state.activity = value;
+  showError("activityError", "");
 }
 
 function goMeeting() {
   if (!state.activity) {
-    alert("Alege o activitate 😊");
+    showError("activityError", "Alege o activitate.");
     return;
   }
 
@@ -366,23 +427,88 @@ function saveLocation() {
   const location = document.getElementById("locationInput").value.trim();
 
   if (!location) {
-    alert("Scrie localitatea sau zona 😊");
+    showError("locationError", "Scrie localitatea/zona sau trimite locația din Telegram.");
     return;
   }
 
   state.location = location;
+  showError("locationError", "");
   buildSummary();
   showScreen("screen-confirm");
 }
 
+function saveTelegramLocation(location) {
+  const latitude = location.latitude;
+  const longitude = location.longitude;
+
+  if (latitude == null || longitude == null) {
+    showError("locationError", "Nu am primit locația. Încearcă din nou sau scrie manual.");
+    return;
+  }
+
+  state.location = `https://maps.google.com/?q=${latitude},${longitude}`;
+  document.getElementById("locationInput").value = state.location;
+  showMessage("locationError", "Locația a fost preluată.", "success");
+}
+
+function requestTelegramLocation() {
+  const locationManager = tg.LocationManager || tg.locationManager;
+
+  if (!locationManager || typeof locationManager.getLocation !== "function") {
+    showError(
+      "locationError",
+      "Telegram nu permite locația aici. Scrie localitatea sau zona manual."
+    );
+    return;
+  }
+
+  showError("locationError", "Se cere permisiunea pentru locație...");
+
+  const getLocation = () => {
+    locationManager.getLocation((location) => {
+      if (!location) {
+        showError("locationError", "Nu am primit locația. Poți scrie manual.");
+        return;
+      }
+
+      saveTelegramLocation(location);
+    });
+  };
+
+  if (typeof locationManager.init === "function" && !locationManager.isInited) {
+    locationManager.init(getLocation);
+    return;
+  }
+
+  getLocation();
+}
+
 function buildSummary() {
   document.getElementById("summaryBox").innerHTML = `
-        👤 Nume: ${state.first_name}<br>
-        📅 Data: ${state.date}<br>
-        🕒 Ora: ${state.time}<br>
-        🎯 Activitate: ${state.activity}<br>
-        🚗 Format: ${state.meeting_type}<br>
-        📍 Locație: ${state.location}
+        <div class="summary-row">
+          <span>👤</span>
+          <div><strong>Nume</strong><small>${escapeHtml(state.first_name)}</small></div>
+        </div>
+        <div class="summary-row">
+          <span>📅</span>
+          <div><strong>Data</strong><small>${escapeHtml(getDisplayDate(parseDate(state.date)))}</small></div>
+        </div>
+        <div class="summary-row">
+          <span>🕒</span>
+          <div><strong>Ora</strong><small>${escapeHtml(state.time)}</small></div>
+        </div>
+        <div class="summary-row">
+          <span>🎯</span>
+          <div><strong>Activitate</strong><small>${escapeHtml(state.activity)}</small></div>
+        </div>
+        <div class="summary-row">
+          <span>🚶</span>
+          <div><strong>Format</strong><small>${escapeHtml(state.meeting_type)}</small></div>
+        </div>
+        <div class="summary-row">
+          <span>📍</span>
+          <div><strong>Locație</strong><small>${escapeHtml(state.location)}</small></div>
+        </div>
       `;
 }
 
