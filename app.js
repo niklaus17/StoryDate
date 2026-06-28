@@ -22,6 +22,7 @@ const state = {
 const allowedTimes = ["19:00", "20:00", "21:00", "22:00"];
 const dateInput = document.getElementById("dateInput");
 const calendarGrid = document.getElementById("calendarGrid");
+const timeInput = document.getElementById("timeInput");
 let visibleMonth = new Date();
 
 function formatDate(date) {
@@ -30,6 +31,12 @@ function formatDate(date) {
   const day = String(date.getDate()).padStart(2, "0");
 
   return `${year}-${month}-${day}`;
+}
+
+function parseDate(value) {
+  const [year, month, day] = value.split("-").map(Number);
+
+  return new Date(year, month - 1, day);
 }
 
 function addDays(date, days) {
@@ -51,10 +58,14 @@ let minDate = "";
 let maxDate = "";
 
 function updateDateLimits() {
-  const today = new Date();
+  const now = new Date();
+  const lastSlotMinutes = 22 * 60;
+  const currentMinutes = now.getHours() * 60 + now.getMinutes();
+  const firstAvailableDate =
+    currentMinutes > lastSlotMinutes ? addDays(now, 1) : now;
 
-  minDate = formatDate(today);
-  maxDate = formatDate(addDays(today, 14));
+  minDate = formatDate(firstAvailableDate);
+  maxDate = formatDate(addDays(now, 14));
 }
 
 function isAllowedDate(date) {
@@ -71,6 +82,46 @@ function getDisplayDate(date) {
     day: "numeric",
     month: "long",
   });
+}
+
+function getTimeMinutes(time) {
+  const [hours, minutes] = time.split(":").map(Number);
+
+  return hours * 60 + minutes;
+}
+
+function isAllowedTime(time, date) {
+  const today = new Date();
+
+  if (!allowedTimes.includes(time)) {
+    return false;
+  }
+
+  if (date !== formatDate(today)) {
+    return true;
+  }
+
+  const currentMinutes = today.getHours() * 60 + today.getMinutes();
+
+  return getTimeMinutes(time) >= currentMinutes;
+}
+
+function updateTimeOptions() {
+  const selectedDate = getSelectedDate();
+
+  Array.from(timeInput.options).forEach((option) => {
+    if (!option.value) {
+      return;
+    }
+
+    option.disabled = selectedDate
+      ? !isAllowedTime(option.value, selectedDate)
+      : false;
+  });
+
+  if (timeInput.value && !isAllowedTime(timeInput.value, selectedDate)) {
+    timeInput.value = "";
+  }
 }
 
 function validateSelectedDate() {
@@ -98,7 +149,7 @@ function renderCalendar() {
   calendarGrid.innerHTML = "";
 
   if (!monthHasAllowedDates(visibleMonth)) {
-    visibleMonth = getMonthStart(new Date());
+    visibleMonth = getMonthStart(parseDate(minDate));
   }
 
   const header = document.createElement("div");
@@ -187,6 +238,7 @@ function renderCalendar() {
     button.addEventListener("click", () => {
       dateInput.value = getDisplayDate(date);
       dateInput.dataset.date = value;
+      updateTimeOptions();
       calendarGrid.classList.add("hidden");
       renderCalendar();
     });
@@ -205,6 +257,8 @@ dateInput.addEventListener("click", () => {
 });
 dateInput.addEventListener("change", validateSelectedDate);
 dateInput.addEventListener("input", validateSelectedDate);
+timeInput.addEventListener("click", updateTimeOptions);
+timeInput.addEventListener("change", updateTimeOptions);
 
 document.getElementById("title").innerText =
   state.first_name + ", ieși cu mine la o întâlnire? ❤️";
@@ -214,6 +268,12 @@ function showScreen(id) {
     .querySelectorAll(".card")
     .forEach((card) => card.classList.add("hidden"));
   document.getElementById(id).classList.remove("hidden");
+
+  if (id === "screen-date") {
+    validateSelectedDate();
+    renderCalendar();
+    updateTimeOptions();
+  }
 }
 
 function sendData() {
@@ -258,6 +318,12 @@ function saveDateTime() {
 
   if (!allowedTimes.includes(time)) {
     alert("Alege o oră între 19:00 și 22:00 😊");
+    return;
+  }
+
+  if (!isAllowedTime(time, date)) {
+    timeInput.value = "";
+    alert("Alege o oră disponibilă 😊");
     return;
   }
 
