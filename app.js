@@ -22,6 +22,7 @@ const state = {
 const allowedTimes = ["19:00", "20:00", "21:00", "22:00"];
 const dateInput = document.getElementById("dateInput");
 const calendarGrid = document.getElementById("calendarGrid");
+let visibleMonth = new Date();
 
 function formatDate(date) {
   const year = date.getFullYear();
@@ -38,6 +39,14 @@ function addDays(date, days) {
   return result;
 }
 
+function getMonthStart(date) {
+  return new Date(date.getFullYear(), date.getMonth(), 1);
+}
+
+function getMonthEnd(date) {
+  return new Date(date.getFullYear(), date.getMonth() + 1, 0);
+}
+
 let minDate = "";
 let maxDate = "";
 
@@ -52,60 +61,140 @@ function isAllowedDate(date) {
   return date >= minDate && date <= maxDate;
 }
 
+function getSelectedDate() {
+  return dateInput.dataset.date || "";
+}
+
+function getDisplayDate(date) {
+  return date.toLocaleDateString("ro-RO", {
+    weekday: "short",
+    day: "numeric",
+    month: "long",
+  });
+}
+
 function validateSelectedDate() {
   updateDateLimits();
 
-  if (!dateInput.value || isAllowedDate(dateInput.value)) {
+  if (!getSelectedDate() || isAllowedDate(getSelectedDate())) {
     return true;
   }
 
   dateInput.value = "";
+  dateInput.dataset.date = "";
   alert("Alege o dată de azi până în următoarele 14 zile 😊");
   return false;
 }
 
-function getDateLabel(date, index) {
-  if (index === 0) {
-    return "Azi";
-  }
+function monthHasAllowedDates(date) {
+  const monthStart = formatDate(getMonthStart(date));
+  const monthEnd = formatDate(getMonthEnd(date));
 
-  if (index === 1) {
-    return "Mâine";
-  }
-
-  return date.toLocaleDateString("ro-RO", {
-    weekday: "short",
-    day: "numeric",
-    month: "short",
-  });
+  return monthStart <= maxDate && monthEnd >= minDate;
 }
 
 function renderCalendar() {
   updateDateLimits();
   calendarGrid.innerHTML = "";
 
-  for (let index = 0; index <= 14; index += 1) {
-    const date = addDays(new Date(), index);
+  if (!monthHasAllowedDates(visibleMonth)) {
+    visibleMonth = getMonthStart(new Date());
+  }
+
+  const header = document.createElement("div");
+  const prevButton = document.createElement("button");
+  const title = document.createElement("div");
+  const nextButton = document.createElement("button");
+  const weekdays = document.createElement("div");
+  const days = document.createElement("div");
+  const previousMonth = new Date(
+    visibleMonth.getFullYear(),
+    visibleMonth.getMonth() - 1,
+    1
+  );
+  const nextMonth = new Date(
+    visibleMonth.getFullYear(),
+    visibleMonth.getMonth() + 1,
+    1
+  );
+
+  header.className = "calendar-header";
+  prevButton.type = "button";
+  prevButton.className = "calendar-nav";
+  prevButton.innerText = "‹";
+  prevButton.disabled = !monthHasAllowedDates(previousMonth);
+  prevButton.addEventListener("click", () => {
+    visibleMonth = previousMonth;
+    renderCalendar();
+  });
+
+  title.className = "calendar-title";
+  title.innerText = visibleMonth.toLocaleDateString("ro-RO", {
+    month: "long",
+    year: "numeric",
+  });
+
+  nextButton.type = "button";
+  nextButton.className = "calendar-nav";
+  nextButton.innerText = "›";
+  nextButton.disabled = !monthHasAllowedDates(nextMonth);
+  nextButton.addEventListener("click", () => {
+    visibleMonth = nextMonth;
+    renderCalendar();
+  });
+
+  header.append(prevButton, title, nextButton);
+
+  weekdays.className = "calendar-weekdays";
+  ["L", "M", "M", "J", "V", "S", "D"].forEach((day) => {
+    const item = document.createElement("span");
+    item.innerText = day;
+    weekdays.appendChild(item);
+  });
+
+  days.className = "calendar-days";
+
+  const monthStart = getMonthStart(visibleMonth);
+  const offset = (monthStart.getDay() + 6) % 7;
+  const daysInMonth = getMonthEnd(visibleMonth).getDate();
+
+  for (let index = 0; index < offset; index += 1) {
+    const empty = document.createElement("span");
+    empty.className = "calendar-empty";
+    days.appendChild(empty);
+  }
+
+  for (let day = 1; day <= daysInMonth; day += 1) {
+    const date = new Date(
+      visibleMonth.getFullYear(),
+      visibleMonth.getMonth(),
+      day
+    );
     const value = formatDate(date);
     const button = document.createElement("button");
+    const isAllowed = isAllowedDate(value);
 
     button.type = "button";
     button.className = "calendar-day";
     button.dataset.date = value;
-    button.innerText = getDateLabel(date, index);
+    button.innerText = String(day);
+    button.disabled = !isAllowed;
 
-    if (dateInput.value === value) {
+    if (getSelectedDate() === value) {
       button.classList.add("active");
     }
 
     button.addEventListener("click", () => {
-      dateInput.value = value;
+      dateInput.value = getDisplayDate(date);
+      dateInput.dataset.date = value;
       calendarGrid.classList.add("hidden");
       renderCalendar();
     });
 
-    calendarGrid.appendChild(button);
+    days.appendChild(button);
   }
+
+  calendarGrid.append(header, weekdays, days);
 }
 
 updateDateLimits();
@@ -152,7 +241,7 @@ function maybeInvite() {
 function saveDateTime() {
   updateDateLimits();
 
-  const date = document.getElementById("dateInput").value;
+  const date = getSelectedDate();
   const time = document.getElementById("timeInput").value;
 
   if (!date || !time) {
@@ -162,6 +251,7 @@ function saveDateTime() {
 
   if (!isAllowedDate(date)) {
     document.getElementById("dateInput").value = "";
+    document.getElementById("dateInput").dataset.date = "";
     alert("Alege o dată de azi până în următoarele 14 zile 😊");
     return;
   }
