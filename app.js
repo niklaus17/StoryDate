@@ -21,6 +21,7 @@ const state = {
 
 const allowedTimes = ["19:00", "20:00", "21:00", "22:00"];
 const dateInput = document.getElementById("dateInput");
+const calendarGrid = document.getElementById("calendarGrid");
 
 function formatDate(date) {
   const year = date.getFullYear();
@@ -45,8 +46,6 @@ function updateDateLimits() {
 
   minDate = formatDate(today);
   maxDate = formatDate(addDays(today, 14));
-  dateInput.min = minDate;
-  dateInput.max = maxDate;
 }
 
 function isAllowedDate(date) {
@@ -65,11 +64,55 @@ function validateSelectedDate() {
   return false;
 }
 
-updateDateLimits();
-dateInput.addEventListener("click", () => {
-  if (typeof dateInput.showPicker === "function") {
-    dateInput.showPicker();
+function getDateLabel(date, index) {
+  if (index === 0) {
+    return "Azi";
   }
+
+  if (index === 1) {
+    return "Mâine";
+  }
+
+  return date.toLocaleDateString("ro-RO", {
+    weekday: "short",
+    day: "numeric",
+    month: "short",
+  });
+}
+
+function renderCalendar() {
+  updateDateLimits();
+  calendarGrid.innerHTML = "";
+
+  for (let index = 0; index <= 14; index += 1) {
+    const date = addDays(new Date(), index);
+    const value = formatDate(date);
+    const button = document.createElement("button");
+
+    button.type = "button";
+    button.className = "calendar-day";
+    button.dataset.date = value;
+    button.innerText = getDateLabel(date, index);
+
+    if (dateInput.value === value) {
+      button.classList.add("active");
+    }
+
+    button.addEventListener("click", () => {
+      dateInput.value = value;
+      calendarGrid.classList.add("hidden");
+      renderCalendar();
+    });
+
+    calendarGrid.appendChild(button);
+  }
+}
+
+updateDateLimits();
+renderCalendar();
+dateInput.addEventListener("click", () => {
+  renderCalendar();
+  calendarGrid.classList.remove("hidden");
 });
 dateInput.addEventListener("change", validateSelectedDate);
 dateInput.addEventListener("input", validateSelectedDate);

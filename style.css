@@ -106,8 +106,32 @@
         background: white;
     }
 
-    input[type="date"] {
+    #dateInput {
         cursor: pointer;
+    }
+
+    .custom-calendar {
+        display: grid;
+        grid-template-columns: 1fr 1fr 1fr;
+        gap: 8px;
+        margin-top: 10px;
+    }
+
+    .calendar-day {
+        min-height: 44px;
+        border: 2px solid #f4c0d2;
+        border-radius: 14px;
+        background: #fff;
+        color: #333;
+        font-size: 14px;
+        font-weight: 700;
+        cursor: pointer;
+    }
+
+    .calendar-day.active {
+        border-color: #ff4388;
+        background: #ffe7f0;
+        color: #ff4388;
     }
 
     .summary {
