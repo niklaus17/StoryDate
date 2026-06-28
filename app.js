@@ -135,12 +135,16 @@ function showError(id, message) {
 function updateTimeOptions() {
   const selectedDate = getSelectedDate();
   timeOptions.innerHTML = "";
+  timeOptions.classList.toggle("hidden", !selectedDate);
+
+  if (!selectedDate) {
+    timeInput.value = "";
+    return;
+  }
 
   allowedTimes.forEach((time) => {
     const button = document.createElement("button");
-    const isAvailable = selectedDate
-      ? isAllowedTime(time, selectedDate)
-      : false;
+    const isAvailable = isAllowedTime(time, selectedDate);
 
     button.type = "button";
     button.className = "time-option";

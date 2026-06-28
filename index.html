@@ -31,7 +31,7 @@
       <input type="text" id="dateInput" placeholder="Alege data" readonly>
       <div class="custom-calendar hidden" id="calendarGrid"></div>
       <input type="hidden" id="timeInput">
-      <div class="time-options" id="timeOptions"></div>
+      <div class="time-options hidden" id="timeOptions"></div>
       <div class="form-message" id="dateTimeError"></div>
       <button class="btn primary" onclick="saveDateTime()">Mai departe →</button>
       <button class="btn ghost" onclick="showScreen('screen-start')">Înapoi</button>
@@ -74,7 +74,6 @@
       <div class="summary" id="summaryBox"></div>
       <button class="btn primary" onclick="confirmInvite()">Confirm ❤️</button>
       <button class="btn ghost" onclick="showScreen('screen-meeting')">Înapoi</button>
-      <button class="btn secondary" onclick="showScreen('screen-date')">Modifică data</button>
     </div>
 
     <div class="card hidden" id="screen-success">
